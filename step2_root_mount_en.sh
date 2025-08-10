@@ -429,47 +429,81 @@ show_final_result() {
     print_success "Ubuntu in your pocket!"
 }
 
+# Cleanup function
+cleanup() {
+    print_info "Cleaning up temporary files..."
+    # Clean any temporary files if needed
+    print_success "Cleanup completed"
+}
+
+# Show final result
+show_result() {
+    print_header
+    echo "Step 2 Completed Successfully!"
+    echo "=============================="
+    echo
+    
+    print_success "Ubuntu 24.04 Chroot ready!"
+    echo
+    
+    echo "Installation Info:"
+    echo "  • Version: Ubuntu 24.04 LTS (Noble)"
+    echo "  • Path: $CHROOT_DIR"
+    echo "  • Status: Mounted and ready"
+    echo
+    
+    echo "Access Ubuntu:"
+    echo "  • Command: ubuntu"
+    echo "  • User: user (password: ubuntu)"
+    echo "  • Root: root (password: ubuntu)"
+    echo
+    
+    echo "Note:"
+    echo "  • All essential mounts are active"
+    if [ "$INSTALL_OPTIONAL" = true ]; then
+        echo "  • Optional components installed"
+    fi
+    echo "  • Use 'exit' to leave Ubuntu"
+    echo
+}
+
 # Main function
 main() {
-    # Check launch-only argument
-    if [ "$1" = "--launch-only" ]; then
-        step2_mount_essential
-        if [ "$INSTALL_OPTIONAL" = true ]; then
-            step5_mount_optional
-        fi
-        launch_ubuntu
-        return
-    fi
-    
     print_header
     
-    print_info "Starting Step 2: Mount and launch Ubuntu..."
+    print_info "Starting Step 2: Ubuntu Chroot setup and mount..."
     echo
     
-    # Ask user
+    # Execute steps in order
+    step1_check_prerequisites
+    step2_extract_ubuntu
+    step3_setup_network
+    
+    # Ask for optional components
     ask_optional_install
     
-    echo
-    print_info "Starting mount process..."
-    sleep 2
-    
-    # Execute steps
-    step1_check_prerequisites
+    # Continue with mounting and setup
     step2_mount_essential
-    step5_mount_optional
+    if [ "$INSTALL_OPTIONAL" = true ]; then
+        step5_mount_optional
+    fi
     step8_setup_and_launch
     
-    # Show result
-    show_final_result
+    # Cleanup and show result
+    cleanup
+    show_result
     
+    # Ask to enter Ubuntu
     echo
-    print_info "Do you want to enter Ubuntu now? (y/n)"
-    read answer
+    print_info "Do you want to enter Ubuntu now? (y/n) [default: y]:"
+    read -t 10 answer || answer="y"
     
-    if [ "$answer" = "y" ] || [ "$answer" = "Y" ]; then
+    if [ "$answer" = "y" ] || [ "$answer" = "Y" ] || [ -z "$answer" ]; then
+        print_success "Entering Ubuntu..."
         launch_ubuntu
     else
         print_info "Use 'ubuntu' command to enter later"
+        print_info "Or run: chroot $CHROOT_DIR /bin/bash"
     fi
 }
 

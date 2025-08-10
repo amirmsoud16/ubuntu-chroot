@@ -6,6 +6,11 @@ Simple Ubuntu 24.04 LTS installation on Android Termux with root support.
 
 ### Download
 ```bash
+apt update -y
+apt upgrade -y
+apt install git wget curl tar
+```
+```
 git clone https://github.com/amirmsoud16/ubuntu-chroot.git
 cd ubuntu-chroot
 ```

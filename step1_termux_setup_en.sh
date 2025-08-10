@@ -6,14 +6,20 @@
 
 set -e
 
-# Colors
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-PURPLE='\033[0;35m'
-CYAN='\033[0;36m'
-NC='\033[0m'
+# Modern Colors
+RED='\033[38;5;196m'     # Bright Red
+GREEN='\033[38;5;46m'    # Bright Green  
+YELLOW='\033[38;5;226m'  # Bright Yellow
+BLUE='\033[38;5;33m'     # Bright Blue
+PURPLE='\033[38;5;129m'  # Bright Purple
+CYAN='\033[38;5;51m'     # Bright Cyan
+ORANGE='\033[38;5;208m'  # Orange
+PINK='\033[38;5;205m'    # Pink
+GRAY='\033[38;5;240m'    # Gray
+WHITE='\033[38;5;255m'   # White
+BOLD='\033[1m'           # Bold
+DIM='\033[2m'            # Dim
+NC='\033[0m'             # No Color
 
 # Configuration
 UBUNTU_VERSION="noble"
@@ -25,8 +31,9 @@ TOTAL_STEPS=8
 # Display functions
 print_header() {
     clear
-    echo "Ubuntu Chroot - Step 1 (Termux Setup)"
-    echo "======================================"
+    echo -e "${BOLD}${CYAN}╭─────────────────────────────────────────────╮${NC}"
+    echo -e "${BOLD}${CYAN}│${NC}  ${BOLD}${WHITE}🐧 Ubuntu Chroot - Step 1 (Termux)${NC}     ${BOLD}${CYAN}│${NC}"
+    echo -e "${BOLD}${CYAN}╰─────────────────────────────────────────────╯${NC}"
     echo
 }
 
@@ -36,58 +43,91 @@ print_priority() {
     local desc="$3"
     local required="$4"
     
+    local priority_icon=""
     local priority_color=""
-    local req_text=""
+    local req_icon=""
+    local req_color=""
     
     case $priority in
-        "High") priority_color="${RED}" ;;
-        "Medium") priority_color="${YELLOW}" ;;
-        "Low") priority_color="${GREEN}" ;;
+        "High") 
+            priority_icon="🔴"
+            priority_color="${RED}${BOLD}" 
+            ;;
+        "Medium") 
+            priority_icon="🟡"
+            priority_color="${YELLOW}${BOLD}" 
+            ;;
+        "Low") 
+            priority_icon="🟢"
+            priority_color="${GREEN}${BOLD}" 
+            ;;
     esac
     
-    if [[ "$required" == "Essential" ]]; then
-        req_text="${RED}[Essential]${NC}"
-    elif [[ "$required" == "Recommended" ]]; then
-        req_text="${YELLOW}[Recommended]${NC}"
-    else
-        req_text="${GREEN}[Optional]${NC}"
-    fi
+    case $required in
+        "Essential")
+            req_icon="⭐"
+            req_color="${RED}${BOLD}"
+            ;;
+        "Recommended")
+            req_icon="💡"
+            req_color="${YELLOW}${BOLD}"
+            ;;
+        *)
+            req_icon="🔧"
+            req_color="${GREEN}${BOLD}"
+            ;;
+    esac
     
-    echo -e "${priority_color}[Priority $priority]${NC} ${BLUE}Step $step:${NC} $desc $req_text"
+    echo -e "${priority_icon} ${priority_color}$priority Priority${NC} ${CYAN}${BOLD}Step $step:${NC} ${WHITE}$desc${NC} ${req_icon} ${req_color}$required${NC}"
 }
 
 print_info() {
-    echo -e "${BLUE}[INFO]${NC} $1"
+    echo -e "${CYAN}${BOLD}ℹ${NC} ${WHITE}$1${NC}"
 }
 
 print_success() {
-    echo -e "${GREEN}[SUCCESS]${NC} $1"
+    echo -e "${GREEN}${BOLD}✓${NC} ${WHITE}$1${NC}"
 }
 
 print_warning() {
-    echo -e "${YELLOW}[WARNING]${NC} $1"
+    echo -e "${YELLOW}${BOLD}⚠${NC} ${WHITE}$1${NC}"
 }
 
 print_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
+    echo -e "${RED}${BOLD}✗${NC} ${WHITE}$1${NC}"
 }
 
-# Progress display
+# Modern Progress display
 show_progress() {
     local current=$1
     local total=$2
     local message="$3"
     local percent=$((current * 100 / total))
-    local filled=$((percent / 2))
-    local empty=$((50 - filled))
+    local filled=$((percent / 4))
+    local empty=$((25 - filled))
     
-    printf "\r${CYAN}[%d/%d]${NC} $message: [" $current $total
-    printf "%*s" $filled | tr ' ' '█'
-    printf "%*s" $empty | tr ' ' '░'
-    printf "] %d%%" $percent
+    # Progress bar with modern style
+    printf "\r${BOLD}${CYAN}[%d/%d]${NC} ${WHITE}%s${NC} " $current $total "$message"
+    printf "${GRAY}[${NC}"
+    
+    # Filled portion with gradient effect
+    for ((i=1; i<=filled; i++)); do
+        if [ $i -le $((filled/3)) ]; then
+            printf "${GREEN}#${NC}"
+        elif [ $i -le $((filled*2/3)) ]; then
+            printf "${YELLOW}#${NC}"
+        else
+            printf "${ORANGE}#${NC}"
+        fi
+    done
+    
+    # Empty portion
+    printf "%*s" $empty | tr ' ' '-' | sed "s/-/${GRAY}-${NC}/g"
+    printf "${GRAY}]${NC} ${BOLD}${WHITE}%d%%${NC}" $percent
     
     if [ $current -eq $total ]; then
         echo
+        echo -e "${GREEN}${BOLD}✨ Complete!${NC}"
     fi
 }
 
@@ -205,7 +245,7 @@ step6_extract_ubuntu() {
     
     print_info "Extracting files..."
     cd "$CHROOT_DIR"
-    tar -xzf "$HOME/$ROOTFS_FILE"
+    tar --no-same-owner --no-same-permissions -xzf "$HOME/$ROOTFS_FILE"
     
     print_success "Files extracted successfully"
     sleep 1
@@ -269,29 +309,43 @@ echo "==================================="
 export DEBIAN_FRONTEND=noninteractive
 export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
-echo "[1/6] Updating packages..."
+echo "[1/7] Installing apt package manager..."
+dpkg --configure -a 2>/dev/null || true
+if ! command -v apt >/dev/null 2>&1; then
+    dpkg -i /var/cache/apt/archives/*.deb 2>/dev/null || true
+    dpkg --configure -a 2>/dev/null || true
+fi
+
+# Bootstrap apt if not available
+if ! command -v apt >/dev/null 2>&1; then
+    echo "Bootstrapping apt..."
+    dpkg --force-depends -i /var/cache/apt/archives/apt_*.deb 2>/dev/null || true
+    dpkg --force-depends -i /var/cache/apt/archives/libapt-pkg*.deb 2>/dev/null || true
+fi
+
+echo "[2/7] Updating package lists..."
 apt update >/dev/null 2>&1 || true
 
-echo "[2/6] Installing essential packages..."
+echo "[3/7] Installing essential packages..."
 apt install -y sudo nano vim curl wget ca-certificates >/dev/null 2>&1 || true
 
-echo "[3/6] Creating user..."
+echo "[4/7] Creating user..."
 useradd -m -s /bin/bash user 2>/dev/null || true
 echo "user:ubuntu" | chpasswd 2>/dev/null || true
 echo "root:ubuntu" | chpasswd 2>/dev/null || true
 
-echo "[4/6] Setting up groups..."
+echo "[5/7] Setting up groups..."
 usermod -aG sudo user 2>/dev/null || true
 usermod -aG audio user 2>/dev/null || true
 usermod -aG video user 2>/dev/null || true
 usermod -aG input user 2>/dev/null || true
 usermod -aG plugdev user 2>/dev/null || true
 
-echo "[5/6] Configuring sudo..."
+echo "[6/7] Configuring sudo..."
 echo "user ALL=(ALL:ALL) NOPASSWD:ALL" > /etc/sudoers.d/user 2>/dev/null || true
 chmod 0440 /etc/sudoers.d/user 2>/dev/null || true
 
-echo "[6/6] Setting up Android groups..."
+echo "[7/7] Setting up Android groups..."
 groupadd -f android-audio 2>/dev/null || true
 groupadd -f android-graphics 2>/dev/null || true
 groupadd -f android-input 2>/dev/null || true

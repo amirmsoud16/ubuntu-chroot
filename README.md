@@ -20,7 +20,8 @@ cd ubuntu-chroot
 # Step 1: Termux Setup (No Root Required)
 chmod +x step1_termux_setup_en.sh
 ./step1_termux_setup_en.sh
-
+```
+```
 # Step 2: Root Mount (Root Required)
 chmod +x step2_root_mount_en.sh
 su -c 'bash step2_root_mount_en.sh'

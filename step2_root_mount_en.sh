@@ -4,14 +4,20 @@
 # Version: Ubuntu 24.04 LTS (Noble Numbat)
 # Environment: Root Access Required
 
-# Colors
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-PURPLE='\033[0;35m'
-CYAN='\033[0;36m'
-NC='\033[0m'
+# Modern Colors
+RED='\033[38;5;196m'     # Bright Red
+GREEN='\033[38;5;46m'    # Bright Green  
+YELLOW='\033[38;5;226m'  # Bright Yellow
+BLUE='\033[38;5;33m'     # Bright Blue
+PURPLE='\033[38;5;129m'  # Bright Purple
+CYAN='\033[38;5;51m'     # Bright Cyan
+ORANGE='\033[38;5;208m'  # Orange
+PINK='\033[38;5;205m'    # Pink
+GRAY='\033[38;5;240m'    # Gray
+WHITE='\033[38;5;255m'   # White
+BOLD='\033[1m'           # Bold
+DIM='\033[2m'            # Dim
+NC='\033[0m'             # No Color
 
 # Configuration
 CHROOT_DIR="/data/data/com.termux/files/home/ubuntu-chroot"
@@ -22,8 +28,9 @@ INSTALL_OPTIONAL=false
 # Display functions
 print_header() {
     clear
-    echo "Ubuntu Chroot - Step 2 (Root Mount)"
-    echo "==================================="
+    echo -e "${BOLD}${RED}╭─────────────────────────────────────────────╮${NC}"
+    echo -e "${BOLD}${RED}│${NC}  ${BOLD}${WHITE}🔐 Ubuntu Chroot - Step 2 (Root)${NC}       ${BOLD}${RED}│${NC}"
+    echo -e "${BOLD}${RED}╰─────────────────────────────────────────────╯${NC}"
     echo
 }
 
@@ -54,37 +61,52 @@ print_priority() {
 }
 
 print_info() {
-    echo -e "${BLUE}[INFO]${NC} $1"
+    echo -e "${CYAN}${BOLD}ℹ${NC} ${WHITE}$1${NC}"
 }
 
 print_success() {
-    echo -e "${GREEN}[SUCCESS]${NC} $1"
+    echo -e "${GREEN}${BOLD}✓${NC} ${WHITE}$1${NC}"
 }
 
 print_warning() {
-    echo -e "${YELLOW}[WARNING]${NC} $1"
+    echo -e "${YELLOW}${BOLD}⚠${NC} ${WHITE}$1${NC}"
 }
 
 print_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
+    echo -e "${RED}${BOLD}✗${NC} ${WHITE}$1${NC}"
 }
 
-# Progress display
+# Modern Progress display
 show_progress() {
     local current=$1
     local total=$2
     local message="$3"
     local percent=$((current * 100 / total))
-    local filled=$((percent / 2))
-    local empty=$((50 - filled))
+    local filled=$((percent / 4))
+    local empty=$((25 - filled))
     
-    printf "\r${CYAN}[%d/%d]${NC} $message: [" $current $total
-    printf "%*s" $filled | tr ' ' '█'
-    printf "%*s" $empty | tr ' ' '░'
-    printf "] %d%%" $percent
+    # Progress bar with modern style
+    printf "\r${BOLD}${RED}[%d/%d]${NC} ${WHITE}%s${NC} " $current $total "$message"
+    printf "${GRAY}[${NC}"
+    
+    # Filled portion with gradient effect
+    for ((i=1; i<=filled; i++)); do
+        if [ $i -le $((filled/3)) ]; then
+            printf "${GREEN}#${NC}"
+        elif [ $i -le $((filled*2/3)) ]; then
+            printf "${YELLOW}#${NC}"
+        else
+            printf "${RED}#${NC}"
+        fi
+    done
+    
+    # Empty portion
+    printf "%*s" $empty | tr ' ' '-' | sed "s/-/${GRAY}-${NC}/g"
+    printf "${GRAY}]${NC} ${BOLD}${WHITE}%d%%${NC}" $percent
     
     if [ $current -eq $total ]; then
         echo
+        echo -e "${GREEN}${BOLD}✨ Complete!${NC}"
     fi
 }
 

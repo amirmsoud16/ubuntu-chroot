@@ -18,7 +18,7 @@ NC='\033[0m'
 # Configuration
 UBUNTU_VERSION="noble"
 CHROOT_DIR="$HOME/ubuntu-chroot"
-ROOTFS_URL="https://cdimage.ubuntu.com/ubuntu-base/releases/24.04/release/ubuntu-base-24.04.1-base-arm64.tar.gz"
+ROOTFS_URL="https://cdimage.ubuntu.com/ubuntu-base/releases/24.04/release/ubuntu-base-24.04.3-base-arm64.tar.gz"
 ROOTFS_FILE="ubuntu-base.tar.gz"
 TOTAL_STEPS=8
 

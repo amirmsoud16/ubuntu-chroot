@@ -122,7 +122,9 @@ show_progress() {
     done
     
     # Empty portion
-    printf "%*s" $empty | tr ' ' '-' | sed "s/-/${GRAY}-${NC}/g"
+    for ((j=1; j<=empty; j++)); do
+        printf "${GRAY}-${NC}"
+    done
     printf "${GRAY}]${NC} ${BOLD}${WHITE}%d%%${NC}" $percent
     
     if [ $current -eq $total ]; then
@@ -245,7 +247,7 @@ step6_extract_ubuntu() {
     
     print_info "Extracting files..."
     cd "$CHROOT_DIR"
-    tar --no-same-owner --no-same-permissions -xzf "$HOME/$ROOTFS_FILE"
+    tar --no-same-owner --no-same-permissions --no-overwrite-dir --delay-directory-restore -xzf "$HOME/$ROOTFS_FILE" 2>/dev/null || tar --no-same-owner --no-same-permissions -xzf "$HOME/$ROOTFS_FILE"
     
     print_success "Files extracted successfully"
     sleep 1

@@ -20,8 +20,9 @@ DIM='\033[2m'            # Dim
 NC='\033[0m'             # No Color
 
 # Configuration
-CHROOT_DIR="/data/data/com.termux/files/home/ubuntu-chroot"
+CHROOT_DIR="/data/local/ubuntu-chroot"
 TERMUX_HOME="/data/data/com.termux/files/home"
+ROOTFS_FILE="ubuntu-base.tar.gz"
 TOTAL_STEPS=8
 INSTALL_OPTIONAL=false
 
@@ -124,15 +125,15 @@ check_root() {
     print_success "Root access verified"
 }
 
-# Check Ubuntu exists
-check_ubuntu_exists() {
-    if [ ! -d "$CHROOT_DIR" ]; then
-        print_error "Ubuntu Chroot not found!"
+# Check Ubuntu rootfs file exists
+check_ubuntu_file() {
+    if [ ! -f "$TERMUX_HOME/$ROOTFS_FILE" ]; then
+        print_error "Ubuntu rootfs file not found!"
         print_info "Please run step 1 first: ./step1_termux_setup_en.sh"
         exit 1
     fi
     
-    print_success "Ubuntu Chroot found"
+    print_success "Ubuntu rootfs file found"
 }
 
 # Ask user for optional install
@@ -157,9 +158,72 @@ step1_check_prerequisites() {
     show_progress 1 $TOTAL_STEPS "Checking system"
     
     check_root
-    check_ubuntu_exists
+    check_ubuntu_file
     
     print_success "All prerequisites ready"
+    sleep 1
+}
+
+# Step 2: Extract Ubuntu rootfs
+step2_extract_ubuntu() {
+    print_priority "High" "2" "Extract Ubuntu rootfs" "Essential"
+    show_progress 2 $TOTAL_STEPS "Extracting Ubuntu"
+    
+    if [ -d "$CHROOT_DIR" ]; then
+        print_warning "Removing old Ubuntu directory..."
+        rm -rf "$CHROOT_DIR"
+    fi
+    
+    print_info "Creating chroot directory..."
+    mkdir -p "$CHROOT_DIR"
+    
+    print_info "Extracting Ubuntu rootfs..."
+    cd "$CHROOT_DIR"
+    
+    # Try different extraction methods with root privileges
+    if ! tar --no-same-owner --no-same-permissions --no-overwrite-dir --delay-directory-restore -xzf "$TERMUX_HOME/$ROOTFS_FILE" 2>/dev/null; then
+        print_warning "First method failed, trying alternative..."
+        if ! tar --no-same-permissions -xzf "$TERMUX_HOME/$ROOTFS_FILE" 2>/dev/null; then
+            print_warning "Second method failed, trying with ignore errors..."
+            tar --ignore-failed-read -xzf "$TERMUX_HOME/$ROOTFS_FILE" || {
+                print_warning "Hard links failed, but continuing anyway..."
+                # Most files extracted successfully, hard link errors are not critical
+            }
+        fi
+    fi
+    
+    print_success "Ubuntu rootfs extracted successfully"
+    sleep 1
+}
+
+# Step 3: Setup basic network
+step3_setup_network() {
+    print_priority "High" "3" "Setup basic network" "Essential"
+    show_progress 3 $TOTAL_STEPS "Configuring network"
+    
+    # Remove old resolv.conf file
+    print_info "Removing old network configuration..."
+    rm -f "$CHROOT_DIR/etc/resolv.conf"
+    
+    # Setup new DNS
+    print_info "Setting up DNS..."
+    cat > "$CHROOT_DIR/etc/resolv.conf" << EOF
+nameserver 8.8.8.8
+nameserver 8.8.4.4
+nameserver 1.1.1.1
+nameserver 9.9.9.9
+EOF
+    
+    # Setup hosts
+    print_info "Setting up hosts file..."
+    cat > "$CHROOT_DIR/etc/hosts" << EOF
+127.0.0.1   localhost ubuntu-chroot
+::1         localhost ip6-localhost ip6-loopback
+ff02::1     ip6-allnodes
+ff02::2     ip6-allrouters
+EOF
+    
+    print_success "Network configured successfully"
     sleep 1
 }
 

@@ -23,10 +23,10 @@ NC='\033[0m'             # No Color
 
 # Configuration
 UBUNTU_VERSION="noble"
-CHROOT_DIR="$HOME/ubuntu-chroot"
+CHROOT_DIR="/data/local/ubuntu-chroot"
 ROOTFS_URL="https://cdimage.ubuntu.com/ubuntu-base/releases/24.04/release/ubuntu-base-24.04.3-base-arm64.tar.gz"
 ROOTFS_FILE="ubuntu-base.tar.gz"
-TOTAL_STEPS=8
+TOTAL_STEPS=4
 
 # Display functions
 print_header() {
@@ -178,33 +178,10 @@ step3_update_packages() {
     sleep 1
 }
 
-# Step 4: Install essential tools
-step4_install_tools() {
-    print_priority "High" "4" "Install essential tools" "Essential"
-    show_progress 4 $TOTAL_STEPS "Installing tools"
-    
-    local tools=("wget" "tar" "gzip" "proot")
-    local missing_tools=()
-    
-    for tool in "${tools[@]}"; do
-        if ! command -v "$tool" >/dev/null 2>&1; then
-            missing_tools+=("$tool")
-        fi
-    done
-    
-    if [[ ${#missing_tools[@]} -gt 0 ]]; then
-        print_info "Installing missing tools: ${missing_tools[*]}"
-        pkg install -y "${missing_tools[@]}" >/dev/null 2>&1
-    fi
-    
-    print_success "All tools ready"
-    sleep 1
-}
-
-# Step 5: Download Ubuntu rootfs
+# Step 4: Download Ubuntu rootfs
 step5_download_ubuntu() {
-    print_priority "High" "5" "Download Ubuntu rootfs (28MB)" "Essential"
-    show_progress 5 $TOTAL_STEPS "Downloading Ubuntu"
+    print_priority "High" "4" "Download Ubuntu rootfs (28MB)" "Essential"
+    show_progress 4 $TOTAL_STEPS "Downloading Ubuntu"
     
     cd "$HOME"
     
@@ -232,25 +209,21 @@ step5_download_ubuntu() {
     sleep 1
 }
 
-# Step 6: Extract files
-step6_extract_ubuntu() {
-    print_priority "High" "6" "Extract files" "Essential"
-    show_progress 6 $TOTAL_STEPS "Extracting Ubuntu"
+# Step 4: Prepare for root script
+step4_prepare_root() {
+    print_priority "Medium" "4" "Prepare for root script" "Essential"
+    show_progress 4 $TOTAL_STEPS "Preparing for root"
     
-    if [[ -d "$CHROOT_DIR" ]]; then
-        print_warning "Removing old directory..."
-        rm -rf "$CHROOT_DIR"
-    fi
+    print_info "Ubuntu rootfs downloaded successfully!"
+    print_info "File location: $HOME/$ROOTFS_FILE"
+    print_info "File size: $(du -h "$HOME/$ROOTFS_FILE" | cut -f1)"
     
-    print_info "Creating new directory..."
-    mkdir -p "$CHROOT_DIR"
-    
-    print_info "Extracting files..."
-    cd "$CHROOT_DIR"
-    tar --no-same-owner --no-same-permissions --no-overwrite-dir --delay-directory-restore -xzf "$HOME/$ROOTFS_FILE" 2>/dev/null || tar --no-same-owner --no-same-permissions -xzf "$HOME/$ROOTFS_FILE"
-    
-    print_success "Files extracted successfully"
-    sleep 1
+    print_success "Termux setup completed!"
+    echo
+    print_info "Next steps:"
+    echo -e "  ${CYAN}1.${NC} Run the root script: ${YELLOW}su -c 'bash step2_root_mount_en.sh'${NC}"
+    echo
+    sleep 2
 }
 
 # Step 7: Setup basic network
@@ -440,11 +413,8 @@ main() {
     step1_check_termux
     step2_check_storage
     step3_update_packages
-    step4_install_tools
     step5_download_ubuntu
-    step6_extract_ubuntu
-    step7_setup_network
-    step8_create_setup_script
+    step4_prepare_root
     
     # Cleanup and result
     cleanup

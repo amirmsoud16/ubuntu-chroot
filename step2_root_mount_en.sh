@@ -101,7 +101,9 @@ show_progress() {
     done
     
     # Empty portion
-    printf "%*s" $empty | tr ' ' '-' | sed "s/-/${GRAY}-${NC}/g"
+    for ((j=1; j<=empty; j++)); do
+        printf "${GRAY}-${NC}"
+    done
     printf "${GRAY}]${NC} ${BOLD}${WHITE}%d%%${NC}" $percent
     
     if [ $current -eq $total ]; then

@@ -19,6 +19,7 @@ pkg install wget git curl tar
 # 4. کلون کردن فایل‌های نصب
 curl -O https://raw.githubusercontent.com/amirmsoud16/ubuntu-chroot.git/main/install_ubuntu_termux.sh
 curl -O https://raw.githubusercontent.com/amirmsoud16/ubuntu-chroot.git/main/setup_ubuntu_root.sh
+chmod +x install_ubuntu_termux.sh setup_ubuntu_root.sh
 ```
 
 ## 📋 مراحل نصب

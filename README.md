@@ -16,8 +16,8 @@ pkg update && pkg upgrade -y
 ```
 ```
 # 4. کلون کردن فایل‌های نصب
-curl -O https://raw.githubusercontent.com/your-repo/install_ubuntu_termux.sh
-curl -O https://raw.githubusercontent.com/your-repo/setup_ubuntu_root.sh
+curl -O https://raw.githubusercontent.com/amirmsoud16/ubuntu-chroot.git/main/install_ubuntu_termux.sh
+curl -O https://raw.githubusercontent.com/amirmsoud16/ubuntu-chroot.git/main/setup_ubuntu_root.sh
 ```
 
 ## 📋 مراحل نصب

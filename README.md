@@ -9,10 +9,10 @@
 
 ## نصب سریع
 ```bash
-apt-get update -y
-apt-get install -y git
+sudo apt-get update -y
+sudo apt-get install -y git
 
-git clone https://github.com/amirmsoud16/ubuntu-chroot.git
+sudo git clone https://github.com/amirmsoud16/ubuntu-chroot.git
 cd ubuntu-chroot/distro
 
 sudo bash gui.sh

@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+# Configurable parameters with sensible defaults
+: "${VNC_DISPLAY:=:1}"
+: "${VNC_GEOMETRY:=1440x720}"
+: "${VNC_DEPTH:=24}"
+: "${VNC_NAME:=modded-ubuntu}"
+: "${VNC_SESSION:=/usr/bin/xfce4-session}"
+
+export DISPLAY="$VNC_DISPLAY"
+export PULSE_SERVER=${PULSE_SERVER:-127.0.0.1}
+
+# Start VNC server with dbus session; bind to localhost for safety
+dbus-launch \
+  vncserver "$VNC_DISPLAY" \
+    -geometry "$VNC_GEOMETRY" \
+    -depth "$VNC_DEPTH" \
+    -localhost \
+    -zliblevel 0 \
+    -name "$VNC_NAME" \
+    -xstartup "$VNC_SESSION"

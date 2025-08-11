@@ -13,7 +13,7 @@ apt-get update -y
 apt-get install -y git
 
 git clone https://github.com/amirmsoud16/ubuntu-chroot.git
-cd ubuntu-chroot/distro
+cd ubuntu-chroot
 
 sudo bash gui.sh
 ```

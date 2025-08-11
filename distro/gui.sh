@@ -1,4 +1,4 @@
-#!/bin/bash
+https://github.com/amirmsoud16/ubuntu-chroot.git#!/bin/bash
 
 set -euo pipefail
 export DEBIAN_FRONTEND=noninteractive
@@ -36,8 +36,8 @@ note() {
 	echo -e " ${G} [-] Successfully Installed !\n"${W}
 	sleep 1
 	cat <<- EOF
-		 ${G}[-] Type ${C}vncstart${G} to run Vncserver.
-		 ${G}[-] Type ${C}vncstop${G} to stop Vncserver.
+		 ${G}[-] Type ${C}./vncstart${G} to run Vncserver.
+		 ${G}[-] Type ${C}./vncstop${G} to stop Vncserver.
 
 		 ${C}Install VNC VIEWER Apk on your Device.
 

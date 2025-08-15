@@ -20,6 +20,7 @@ cd ubuntu-chroot/distro
 sudo bash gui.sh
 ```
 ```
+cd ubuntu-chroot
 chmod +x setup_x11vnc_termux.sh
 ./setup_x11vnc_termux.sh
 ```
